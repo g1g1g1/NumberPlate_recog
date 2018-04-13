@@ -20,6 +20,9 @@ import gen
 import model
 
 
+
+
+
 def code_to_vec(p, code):
     def char_to_vec(c):
         y = numpy.zeros((len(common.CHARS),))
@@ -32,7 +35,8 @@ def code_to_vec(p, code):
 
 
 def read_data(img_glob):
-    
+    f=open('korListText.txt','r')
+    line = f.readline()
     
     for fname in sorted(glob.glob(img_glob)):
         global i
@@ -40,13 +44,13 @@ def read_data(img_glob):
         print(fname) #파일 이름 확인하기 위해 넣은 코드
         code = fname.split("\\")[1][-11:-5] #split("/")[1][9:16]을 바꿈
         print(code)
-        p = fname.split("\\")[1][-1] == '1' #마찬가지로 /를 \\로 바꿈
+        p = fname.split("\\")[1][-5] == '1' #마찬가지로 /를 \\로 바꿈
         
         #print("p: ",p," code : ",code) #p와 code를 확인하기 위해 넣은 코드
         ind = fname.split("\\")[1][-14:-11]
         realind = int(ind)
         #print(KorList)
-        code = code[0:2]+gen.korList[realind]+code[2:]
+        code = code[0:2]+line[realind]+code[2:]
         print("p: ",p," code : ",code) #p와 code를 확인하기 위해 넣은 코드
         i+=1
         yield im, code_to_vec(p, code)

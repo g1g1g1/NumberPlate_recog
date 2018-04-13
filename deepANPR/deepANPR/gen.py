@@ -17,6 +17,7 @@ import numpy
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+from itertools import tee
 
 import common
 
@@ -254,51 +255,55 @@ def generate_ims():
     while True:
         yield generate_im(font_char_ims[random.choice(fonts)], num_bg_images)
 
-korList=[]
+
 def makeKorList(im_gen):
-    
+    f = open("E:/tensorflowTester/korListText.txt","w")
+
+    korList=""
     for img_idx,(im,c,p) in enumerate(im_gen):
-        korList.append(c[2])
-
-
-def retKorList():
-    global korList
-    return korList  
-
-def toTrain():
-    mList = copy.deepcopy(retKorList())
-    return mList
-
-def tryThisFunc(tryList):
-    return tryList
+        korList+=c[2]
+    print(len(korList))
+    f.write(korList)
+    f.close()
 
 
 
-#if __name__ == "__main__":
-os.mkdir("test")
-im_gen = itertools.islice(generate_ims(), int(sys.argv[1]))
-makeKorList(im_gen)
+
+def makeDir():
+    os.mkdir("test")
+
+
+
+if __name__ == "__main__":
+    makeDir()
     
-retKorList()
-tryThisList = toTrain()
-print(len(tryThisList))
+    im_gen = itertools.islice(generate_ims(), int(sys.argv[1]))
+    im_gen,im_gen2 = tee(im_gen)
     
+
+    makeKorList(im_gen)
     
-im_gen = itertools.islice(generate_ims(), int(sys.argv[1]))
-for img_idx, (im, c, p) in enumerate(im_gen):
-    fname = "test/{:08d}_{}_{}.png".format(img_idx, c,
+
+    for img_idx, (im, c, p) in enumerate(im_gen2):
+        fname = "test/{:08d}_{}_{}.png".format(img_idx, c,
                                                "1" if p else "0")
         
-    #print(c[2])
-    fname_list = list(fname)
-    fname_only_digit=""
-    for w in fname_list:
-        if(w.isdigit()):
-            fname_only_digit+=w
-    fname = copy.deepcopy(fname_only_digit)
-    fname='test/'+fname+'.png'
-    #print(fname)
-    #print(fname)
+        
+        fname_list = list(fname)
+        fname_only_digit=""
+        for w in fname_list:
+            if(w.isdigit()):
+                fname_only_digit+=w
+        fname = copy.deepcopy(fname_only_digit)
+        fname='test/'+fname+'.png'
+        
         
 
-    cv2.imwrite(fname, im * 255.)
+        cv2.imwrite(fname, im * 255.)
+
+ 
+
+
+
+    
+
