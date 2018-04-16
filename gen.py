@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Code source: https://github.com/matthewearl/deep-anpr
+'''
+
 __all__ = (
     'generate_ims',
 )

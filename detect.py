@@ -1,3 +1,7 @@
+'''
+Code source: https://github.com/matthewearl/deep-anpr
+'''
+
 #encoding=utf-8
 __all__ = (
     'detect',

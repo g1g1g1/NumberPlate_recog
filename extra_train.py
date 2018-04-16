@@ -1,3 +1,7 @@
+'''
+Code source: https://github.com/matthewearl/deep-anpr
+'''
+
 __all__ = (
     'train',
 )

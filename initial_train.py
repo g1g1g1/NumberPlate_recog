@@ -1,3 +1,7 @@
+'''
+Code source: https://github.com/matthewearl/deep-anpr
+'''
+
 __all__ = (
     'train',
 )
@@ -212,9 +216,9 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
 
 
 if __name__ == "__main__":
-    f = numpy.load("weights.npz") # 이미 훈련된 weights 파일로 추가학습 
-    initial_weights = [f[n] for n in sorted(f.files,
-                                            key=lambda s: int(s[4:]))]
+    # 맨 처음 training인 경우
+    initial_weights = None
+    
     
     train(learn_rate=0.001,
           report_steps=20,

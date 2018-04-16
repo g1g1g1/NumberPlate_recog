@@ -1,3 +1,7 @@
+'''
+Code source: https://github.com/matthewearl/deep-anpr
+'''
+
 __all__ = (
     'get_training_model',
     'get_detect_model',
