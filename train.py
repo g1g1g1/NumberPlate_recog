@@ -220,4 +220,5 @@ if __name__ == "__main__":
           report_steps=20,
           batch_size=50,
           initial_weights=initial_weights)
+    # for github tutorial
     
