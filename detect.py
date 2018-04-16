@@ -132,13 +132,18 @@ def letter_probs_to_code(letter_probs):
 
 
 if __name__ == "__main__":
-    target_img = r"D:\ewha_project\test_data\in29.jpg"
+    target_img = r"D:\ewha_project\test_data\in33.jpg"
     print("detect.py 실행중입니다. 대상 이미지:", target_img)
 
-    im2 = cv2.imread(target_img)  # input image
-    im2 = cv2.resize(im2,(440,330)) # 실행 속도 줄이기 위해 resize 작업 진행
-    #print("without resizing input image >>>>")
+    im2= cv2.imread(target_img)  # input image
     print("with resizing input image >>>>")
+    # resizing - 비율 기준으로
+    # 정면, 정면-위쪽에서 찍힌 경우 가로 480px 필요 - in30.jpg, in 31.jpg
+    # 측면으로 약간(좌측) 치우친 경우 500px 필요 - in32.jpg
+    # 측면으로 심하게(우측) 치우친 경우 600px 필요 - in33.jpg
+    r = 600. / im2.shape[1]
+    dsize = (600, int(im2.shape[0]*r))
+    im2 = cv2.resize(im2, dsize)
     im_gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY) / 255.
 
     f = numpy.load("D:\ewha_project\weights.npz")   # weight 파일
