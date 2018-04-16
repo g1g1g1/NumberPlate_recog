@@ -126,7 +126,7 @@ def post_process(matches):
         present_probs = numpy.array([m[2] for m in group_matches])
         letter_probs = numpy.stack(m[3] for m in group_matches)
 
-        yield letter_probs[numpy.argmax(present_probs)]
+        yield letter_probs[numpy.argmax(present_probs)] #실제 쓰이는 인자만 리턴!
 
 
 def letter_probs_to_code(letter_probs):
@@ -136,8 +136,12 @@ def letter_probs_to_code(letter_probs):
 if __name__ == "__main__":
     target_img = r"D:\ewha_project\test_data\in29.jpg"
     print("detect.py 실행중입니다. 대상 이미지:", target_img)
-    im = cv2.imread(target_img)  # input image
-    im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) / 255.
+
+    im2 = cv2.imread(target_img)  # input image
+    im2 = cv2.resize(im2,(440,330)) # 실행 속도 줄이기 위해 resize 작업 진행
+    #print("without resizing input image >>>>")
+    print("with resizing input image >>>>")
+    im_gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY) / 255.
 
     f = numpy.load("D:\ewha_project\weights.npz")   # weight 파일
     param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
