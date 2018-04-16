@@ -130,18 +130,17 @@ def letter_probs_to_code(letter_probs):
 
 
 if __name__ == "__main__":
-    target_img = "test_data\in29.jpg"
+    target_img = r"D:\ewha_project\test_data\in29.jpg"
     print("detect.py 실행중입니다. 대상 이미지:", target_img)
     im = cv2.imread(target_img)  # input image
     im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) / 255.
 
-    f = numpy.load("weights.npz")   # weight 파일
+    f = numpy.load("D:\ewha_project\weights.npz")   # weight 파일
     param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
 
     start_time = time.time()
 
-    for letter_probs in post_process(
-                                                      detect(im_gray, param_vals)):
+    for letter_probs in post_process(detect(im_gray, param_vals)):
         code = letter_probs_to_code(letter_probs)
 
         if code is None:
