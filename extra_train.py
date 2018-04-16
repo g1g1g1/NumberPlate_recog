@@ -20,7 +20,7 @@ import numpy
 import tensorflow as tf
 
 import common
-import gen
+import generate_train_set
 import model
 
 def code_to_vec(p, code):
@@ -41,27 +41,20 @@ def read_data(img_glob):
     for fname in sorted(glob.glob(img_glob)):
         global i
         im = cv2.imread(fname)[:, :, 0].astype(numpy.float32) / 255.
-        print(fname) #파일 이름 확인하기 위해 넣은 코드
         code = fname.split("\\")[1][-11:-5] #split("/")[1][9:16]을 바꿈
-        print(code)
         p = fname.split("\\")[1][-5] == '1' #마찬가지로 /를 \\로 바꿈
         
-        #print("p: ",p," code : ",code) #p와 code를 확인하기 위해 넣은 코드
         ind = fname.split("\\")[1][-14:-11]
         realind = int(ind)
-        #print(KorList)
         code = code[0:2]+line[realind]+code[2:]
-        print("p: ",p," code : ",code) #p와 code를 확인하기 위해 넣은 코드
         i+=1
         yield im, code_to_vec(p, code)
-
 
 def unzip(b):
     xs, ys = zip(*b)
     xs = numpy.array(xs)
     ys = numpy.array(ys)
     return xs, ys
-
 
 def batch(it, batch_size):
     out = []
@@ -74,7 +67,7 @@ def batch(it, batch_size):
         yield out
       
 def read_batches(batch_size):
-    g = gen.generate_ims()
+    g = generate_train_set.generate_ims()
     def gen_vecs():
         for im, c, p in itertools.islice(g, batch_size):
             yield im, code_to_vec(p, c)
@@ -82,32 +75,13 @@ def read_batches(batch_size):
     while True:
         yield unzip(gen_vecs())
 
-#get_loss가 문제임 ... 예전에는 softmax_cross_entropy_with_logits()
-#의 인자가 좀 달랐던 듯 함
-
-
 def get_loss(y, y_):
     # Calculate the loss from digits being incorrect.  Don't count loss from
     # digits that are in non-present plates.
-    #print(tf.reshape(y[:,1:]),tf.reshape(y_[:,1:]))
-    
-    #밑에 train()에서 y는 model 모듈의 get_training_model()에서 넘겨준 변수임
-    #get_training_model()에서 y는 tf.matmul(h_fc1,W_fc2)+b_fc2 여서
-    #logits를 y라고 함
-    #y_는 placeholder이기 때문에 (train()에서 그렇게 쓰임)
-    #labels라고 추측
-    
-    #digits_loss = tf.nn.softmax_cross_entropy_with_logits(labels=y_,logits=y)
     digits_loss = tf.nn.softmax_cross_entropy_with_logits(logits=tf.reshape(y[:, 1:],[-1, len(common.CHARS)]),labels=tf.reshape(y_[:, 1:],[-1, len(common.CHARS)]))
-    
-    
-    #위에 원래 tf.reshape(y[:, 1:],[-1, len(common.CHARS)]),tf.reshape(y_[:, 1:],[-1, len(common.CHARS)]) 가 인자였음
     digits_loss = tf.reshape(digits_loss, [-1, 7])
-    digits_loss = tf.reduce_sum(digits_loss)#인자는 원래 digits_loss,1이었음
+    digits_loss = tf.reduce_sum(digits_loss)
     digits_loss *= (y_[:, 0] != 0)
-
-    #아주아주 의문인 부분 왜 reduce_sum을 하는가.. reduce_mean을 하는게 맞는 식 아닌지
-
     digits_loss = tf.reduce_sum(digits_loss)
 
     # Calculate the loss from presence indicator being wrong.
@@ -168,12 +142,7 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
                             numpy.logical_and(r[2] < 0.5,
                                               r[3] < 0.5)))
         r_short = (r[0][:190], r[1][:190], r[2][:190], r[3][:190])
-        '''for b, c, pb, pc in zip(*r_short):
-            print("{} {} <-> {} {}".format(vec_to_plate(c), pc,
-                                       vec_to_plate(b), float(pb)))
-        '''
         num_p_correct = numpy.sum(r[2] == r[3])
-        
         print ("Batch:", batch_idx, "Digit loss:", r[4],
                                     "Presence_loss", r[5],
                                     "Loss:", r[6])
@@ -201,11 +170,6 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
                 if batch_idx % report_steps == 0:
                     batch_time = time.time()
                     if last_batch_idx != batch_idx:
-                        '''
-                        print("time for 60 batches {}".format(
-                            60 * (last_batch_time - batch_time) /
-                                            (last_batch_idx - batch_idx)))
-                        '''
                         last_batch_idx = batch_idx
                         last_batch_time = batch_time
 

@@ -17,7 +17,6 @@ import tensorflow as tf
 import common
 import model
 
-
 def make_scaled_ims(im, min_shape):
     ratio = 1. / 2 ** 0.5
     shape = (im.shape[0] / ratio, im.shape[1] / ratio)
@@ -27,7 +26,6 @@ def make_scaled_ims(im, min_shape):
         if shape[0] < min_shape[0] or shape[1] < min_shape[1]:
             break
         yield cv2.resize(im, (shape[1], shape[0]))
-
 
 def detect(im, param_vals):
     """

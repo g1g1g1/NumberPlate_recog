@@ -8,14 +8,9 @@ __all__ = (
     'WINDOW_SHAPE',
 )
 
-
 import tensorflow as tf
-
 import common
-
-
 WINDOW_SHAPE = (64, 128)
-
 
 # Utility functions
 def weight_variable(shape):
