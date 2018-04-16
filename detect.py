@@ -132,35 +132,40 @@ def letter_probs_to_code(letter_probs):
 
 
 if __name__ == "__main__":
-    target_img = r"D:\ewha_project\test_data\in33.jpg"
-    print("detect.py 실행중입니다. 대상 이미지:", target_img)
+    for idx in range(1, 34):
+        target_img = "D:/ewha_project/test_data/in" + str(idx) + ".jpg"
+        print("detect.py 실행중입니다. 대상 이미지:", target_img)
 
-    im2= cv2.imread(target_img)  # input image
-    print("with resizing input image >>>>")
-    # resizing - 비율 기준으로
-    # 정면, 정면-위쪽에서 찍힌 경우 가로 480px 필요 - in30.jpg, in 31.jpg
-    # 측면으로 약간(좌측) 치우친 경우 500px 필요 - in32.jpg
-    # 측면으로 심하게(우측) 치우친 경우 600px 필요 - in33.jpg
-    r = 600. / im2.shape[1]
-    dsize = (600, int(im2.shape[0]*r))
-    im2 = cv2.resize(im2, dsize)
-    im_gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY) / 255.
+        im2= cv2.imread(target_img)  # input image
+        print("with resizing input image >>>>")
+        # resizing - 비율 기준으로
+        # 정면, 정면-위쪽에서 찍힌 경우 가로 480px 필요 - in30.jpg, in 31.jpg
+        # 측면으로 약간(좌측) 치우친 경우 500px 필요 - in32.jpg
+        # 측면으로 심하게(우측) 치우친 경우 600px 필요 - in33.jpg
 
-    f = numpy.load("D:\ewha_project\weights.npz")   # weight 파일
-    param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
+        # 이미지의 가로 px이 600 이상인 경우에만 resize 과정 수행
+        if(im2.shape[1]>600):
+            r = 600. / im2.shape[1]
+            dsize = (600, int(im2.shape[0]*r))
+            im2 = cv2.resize(im2, dsize)
 
-    start_time = time.time()
+        im_gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY) / 255.
 
-    for letter_probs in post_process(detect(im_gray, param_vals)):
-        code = letter_probs_to_code(letter_probs)
+        f = numpy.load("D:\ewha_project\weights0415.npz")   # weight 파일
+        param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
 
-        if code is None:
-            print("예측이 제대로 이루어지지 않음.")
-        else:
-            print("작업 결과물:", code)
+        start_time = time.time()
 
-    end_time = time.time()
-    print("detect에 걸린 시간:", end_time-start_time)
+        for letter_probs in post_process(detect(im_gray, param_vals)):
+            code = letter_probs_to_code(letter_probs)
+
+            if code is None:
+                print("예측이 제대로 이루어지지 않음.")
+            else:
+                print("작업 결과물:", code)
+
+        end_time = time.time()
+        print("detect에 걸린 시간:", end_time-start_time)
 
         
     
