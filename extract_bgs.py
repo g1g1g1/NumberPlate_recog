@@ -8,17 +8,13 @@ __all__ = (
 
 
 import os
-import sys
 import tarfile
-
 import cv2
 import numpy
-
 
 def im_from_file(f):
     a = numpy.asarray(bytearray(f.read()), dtype=numpy.uint8)
     return cv2.imdecode(a, cv2.IMREAD_GRAYSCALE) #load image grayscale에서 변경
-
 
 def extract_backgrounds(archive_name):
     """
@@ -64,5 +60,4 @@ def extract_backgrounds(archive_name):
 
 
 if __name__ == "__main__":
-
     extract_backgrounds("SUN397.tar.gz")

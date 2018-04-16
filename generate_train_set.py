@@ -26,14 +26,11 @@ from itertools import tee
 import common
 
 FONT_DIR = "./fonts"
-FONT_HEIGHT = 32  # Pixel size to which the chars are resized
+FONT_HEIGHT = 32
 
 OUTPUT_SHAPE = (64, 128)
 
 CHARS = common.CHARS + " "
-
-
-
 
 def make_char_ims(font_path, output_height):
     font_size = output_height * 4
@@ -169,7 +166,6 @@ def generate_plate(font_height, char_ims):
     radius = 1 + int(font_height * 0.1 * random.random())
 
     code = generate_code()
-    #print(code,"여기는 generate_plate()")
     text_width = sum(char_ims[c].shape[1] for c in code)
     text_width += (len(code) - 1) * spacing
 
@@ -270,30 +266,20 @@ def makeKorList(im_gen):
     f.write(korList)
     f.close()
 
-
-
-
 def makeDir():
     os.mkdir("test")
-
-
 
 if __name__ == "__main__":
     makeDir()
     
-    im_gen = itertools.islice(generate_ims(), 1000) #커맨드 안받아오게 바꿈
-                                                    #생성할 데이터셋 개수 = 1000
+    im_gen = itertools.islice(generate_ims(), 1000) #생성할 데이터셋 개수 = 1000
     im_gen,im_gen2 = tee(im_gen)
-    
-
     makeKorList(im_gen)
-    
 
     for img_idx, (im, c, p) in enumerate(im_gen2):
         fname = "test/{:08d}_{}_{}.png".format(img_idx, c,
                                                "1" if p else "0")
-        
-        
+
         fname_list = list(fname)
         fname_only_digit=""
         for w in fname_list:
@@ -301,8 +287,6 @@ if __name__ == "__main__":
                 fname_only_digit+=w
         fname = copy.deepcopy(fname_only_digit)
         fname='test/'+fname+'.png'
-        
-        
 
         cv2.imwrite(fname, im * 255.)
 
