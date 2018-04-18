@@ -132,10 +132,9 @@ def letter_probs_to_code(letter_probs):
 
 
 if __name__ == "__main__":
-    f = numpy.load("D:\ewha_project\weights0417_1.npz")  # 이미 훈련된 weights 파일 load
+    f = numpy.load("D:/ewha_project/weights0417_2c.npz")  # 이미 훈련된 weights 파일 load
     param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
-
-    for idx in range(1, 53):
+    for idx in range(66, 67):
         target_img = "D:/ewha_project/test_data/" + str(idx) + ".jpg"
         print("detect.py 실행중입니다. 대상 이미지:", target_img)
 
