@@ -132,16 +132,21 @@ def letter_probs_to_code(letter_probs):
 
 
 if __name__ == "__main__":
-    for idx in range(1, 34):
-        target_img = "D:/ewha_project/test_data/in" + str(idx) + ".jpg"
+    f = numpy.load("D:\ewha_project\weights0417_1.npz")  # 이미 훈련된 weights 파일 load
+    param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
+
+    for idx in range(1, 53):
+        target_img = "D:/ewha_project/test_data/" + str(idx) + ".jpg"
         print("detect.py 실행중입니다. 대상 이미지:", target_img)
 
         im2= cv2.imread(target_img)  # input image
         print("with resizing input image >>>>")
-        # resizing - 비율 기준으로
-        # 정면, 정면-위쪽에서 찍힌 경우 가로 480px 필요 - in30.jpg, in 31.jpg
-        # 측면으로 약간(좌측) 치우친 경우 500px 필요 - in32.jpg
-        # 측면으로 심하게(우측) 치우친 경우 600px 필요 - in33.jpg
+        """
+        resizing - 비율 기준으로
+        정면, 정면-위쪽에서 찍힌 경우 가로 480px 필요 - in30.jpg, in 31.jpg
+        측면으로 약간(좌측) 치우친 경우 500px 필요 - in32.jpg
+        측면으로 심하게(우측) 치우친 경우 600px 필요 - in33.jpg
+        """
 
         # 이미지의 가로 px이 600 이상인 경우에만 resize 과정 수행
         if(im2.shape[1]>600):
@@ -150,9 +155,6 @@ if __name__ == "__main__":
             im2 = cv2.resize(im2, dsize)
 
         im_gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY) / 255.
-
-        f = numpy.load("D:\ewha_project\weights0415.npz")   # weight 파일
-        param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
 
         start_time = time.time()
 
