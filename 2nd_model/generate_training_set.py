@@ -256,10 +256,11 @@ def makeKorList(im_gen):
 def makeDir():
     os.mkdir("E:/project data/test")
 
+# 수정사항: 생성하는 데이터셋의 갯수를 3000개로
 if __name__ == "__main__":
     makeDir()
-    im_gen = itertools.islice(generate_ims(), 1000) #커맨드 안받아오게 바꿈
-                                                    #생성할 데이터셋 개수 = 1000
+    im_gen = itertools.islice(generate_ims(), 3000) #커맨드 안받아오게 바꿈
+                                                    #생성할 데이터셋 개수 = 3000
     im_gen,im_gen2 = tee(im_gen)
     makeKorList(im_gen)
 

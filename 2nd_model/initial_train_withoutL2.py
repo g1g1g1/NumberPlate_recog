@@ -3,6 +3,7 @@ __all__ = (
 )
 i = 0
 
+# L2 loss 없는 버전
 import glob
 import itertools
 import time
@@ -14,6 +15,15 @@ import tensorflow as tf
 import common
 import generate_training_set
 import model
+
+from pylab import legend, savefig, plot
+
+digit_loss_list = []
+pres_loss_list = []
+total_loss_list = []
+ep = []
+
+date = "0518" # training date
 
 def code_to_vec(p, code):
     def char_to_vec(c):
@@ -27,7 +37,7 @@ def code_to_vec(p, code):
 
 
 def read_data(img_glob):
-    f=open('korListText.txt','r')
+    f=open('E:/project data/korListText.txt','r')
     line = f.readline()
     
     for fname in sorted(glob.glob(img_glob)):
@@ -72,7 +82,7 @@ def read_batches(batch_size):
 # L2 loss 계산 위해 weights 인자 추가
 def get_loss(weights, y, y_):
     # L2 regularization 위한 베타값 설정
-    beta = 0.01
+    #beta = 0.01
 
     # Calculate the loss from digits being incorrect.  Don't count loss from
     # digits that are in non-present plates.
@@ -83,20 +93,23 @@ def get_loss(weights, y, y_):
     digits_loss *= (y_[:, 0] != 0)
     digits_loss = tf.reduce_mean(digits_loss)
 
-    digits_l2_loss = 0.
-
-    # digit에 관한 l2 loss 계산
-    for w in weights:
-        digits_l2_loss += tf.nn.l2_loss(w)
-
-    # 총 loss 계산
-    digits_total_loss = tf.reduce_mean(digits_loss + digits_l2_loss * beta)
-
     # Calculate the loss from presence indicator being wrong.
     presence_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=y[:, :1], labels=y_[:, :1])
     presence_loss = 7 * tf.reduce_mean(presence_loss)
 
-    return digits_total_loss, presence_loss, digits_total_loss + presence_loss
+    total_loss = digits_loss + presence_loss
+
+    '''
+    total_l2_loss = 0.
+
+    # l2 loss 계산
+    for w in weights:
+        total_l2_loss += tf.nn.l2_loss(w)
+    
+    total_l2_loss = tf.reduce_mean(total_loss + total_l2_loss * beta)
+    '''
+
+    return digits_loss, presence_loss, total_loss
 
 
 def train(learn_rate, report_steps, batch_size, initial_weights=None):
@@ -126,6 +139,7 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
     weights = [params[0], params[2], params[4], params[6], params[8]]
 
     digits_loss, presence_loss, loss = get_loss(weights, y, y_)   # L2 loss 위해 weights 인자 넘겨줌
+
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
     best = tf.argmax(tf.reshape(y[:, 1:], [-1, 7, len(common.CHARS)]), 2)
@@ -164,6 +178,12 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
         print ("Batch:", batch_idx, "Digit loss:", r[4],
                                     "Presence_loss", r[5],
                                     "Loss:", r[6])
+        digit_loss_list.append(r[4]) # digit loss저장
+        pres_loss_list.append(r[5]) # presence loss 저장
+        total_loss_list.append(r[6]) # 총 loss 저장
+        ep.append(batch_idx)
+
+        return digit_loss_list, pres_loss_list, total_loss_list, ep
 
     # dropout 변수 feed_dict에 추가
     # 이 함수는 학습 과정이니까 keep_prob=0.7
@@ -173,7 +193,20 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
                             y_: batch_ys,
                             kp: 0.7})           #학습시에는 keep-prob 0.7로 세팅
         if batch_idx % report_steps == 0:
-            do_report()
+            digit_loss_list, pres_loss_list, total_loss_list, ep = do_report()
+        if batch_idx % 1000 == 0:
+            # 추가: 일정 스텝마다 지금까지의 학습 경과 파일로 저장 + weights파일 저장
+
+            # weight 파일 저장
+            tmp_weights = [p.eval() for p in params]
+            numpy.savez("E:/project data/withoutL2_scope/" + date + "_weight/" + date + "_ep" + str(batch_idx) + ".npz", *tmp_weights)
+            print("[without L2 loss ver.] epoch:" + str(batch_idx) + " weights save complete!")
+
+            # 학습 경과 graph 저장
+            plot(ep, digit_loss_list, ep, pres_loss_list, ep, total_loss_list, marker='o')
+            legend(['digit loss', 'presence loss', 'total loss'], loc='best')
+            savefig("E:/project data/withoutL2_scope/" + date + "_graph/" + date + "_ep" + str(batch_idx) + ".png")
+            print("[without L2 loss ver.] graph save complete!")
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.95)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
@@ -181,7 +214,7 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
         if initial_weights is not None:
             sess.run(assign_ops)
 
-        test_xs, test_ys = unzip(list(read_data("./test/*.png"))[:50])
+        test_xs, test_ys = unzip(list(read_data("E:/project data/test/*.png"))[:50])
 
         try:
             last_batch_idx = 0
@@ -194,14 +227,24 @@ def train(learn_rate, report_steps, batch_size, initial_weights=None):
                     if last_batch_idx != batch_idx:
                         last_batch_idx = batch_idx
                         last_batch_time = batch_time
+                if batch_idx == 20000:
+                    last_weights = [p.eval() for p in params]
+                    numpy.savez(
+                        "E:/project data/withoutL2_scope/" + date + "_weight/" + date + "_ep" + str(batch_idx) + ".npz",
+                        *last_weights)
+                    print("[without L2 loss ver.] epoch:" + str(batch_idx) + " weights save complete!")
+                    return last_weights
 
         except KeyboardInterrupt:
             last_weights = [p.eval() for p in params]
-            numpy.savez("2nd_model_weights_ver1.npz", *last_weights)
+            numpy.savez("E:/project data/withoutL2_scope/" + date + "_weight/" + date + "_ep" + str(batch_idx) + ".npz",
+                        *last_weights)
+            print("[without L2 loss ver.] epoch:" + str(batch_idx) + " weights save complete!")
             return last_weights
 
 
 if __name__ == "__main__":
+   
     train(learn_rate=0.001,
           report_steps=20,
           batch_size=50,

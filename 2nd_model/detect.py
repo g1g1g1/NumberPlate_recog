@@ -136,7 +136,7 @@ def letter_probs_to_code(letter_probs):
 
 if __name__ == "__main__":
     print("데이터셋 validating 시작")
-    f = numpy.load("weights0417ver_mini_train.npz")   # weight 파일
+    f = numpy.load("E:/project data/withoutL2/0518_ep144910_weights/0518_model2_weights_ep15090.npz")   # weight 파일
     param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
 
     for idx in range(1, 99):
