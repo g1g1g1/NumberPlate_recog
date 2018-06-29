@@ -3,6 +3,9 @@ Code source: https://github.com/matthewearl/deep-anpr
 '''
 
 #encoding=utf-8
+# -*- coding: utf-8 -*-
+
+
 __all__ = (
     'detect',
     'post_process',
@@ -133,11 +136,18 @@ def letter_probs_to_code(letter_probs):
 
 if __name__ == "__main__":
     print("데이터셋 validating 시작")
-    f = numpy.load("weights0417ver_mini_train.npz")   # weight 파일
+    f = numpy.load("D:/ewha_project/weights/model1_0522_ep20000.npz")   # weight 파일 load
     param_vals = [f[n] for n in sorted(f.files, key=lambda s: int(s[4:]))]
 
+    # 정답 번호판 문자열이 담긴 txt 파일 load
+    targets = open('D:/ewha_project/test_data/target/target.txt')
+
+    completely_correct = 0 # 모든 문자열이 맞은 사진 갯수
+    number_correct = 0 # 번호판의 숫자만 맞은 사진 갯수
+    total = 0   # 총 사진 갯수
+
     for idx in range(1, 99):
-        target_img = "G:/ewha_project/test_data/in"+str(idx)+".jpg"
+        target_img = "D:/ewha_project/test_data/in"+str(idx)+".jpg"
         print("detect.py 실행중입니다. 대상 이미지:", target_img)
         im2 = cv2.imread(target_img)  # input image
         print("with resizing input image >>>>")
@@ -156,14 +166,36 @@ if __name__ == "__main__":
 
         for letter_probs in post_process(detect(im_gray, param_vals)):
             code = letter_probs_to_code(letter_probs)
+            code = code.replace(" ", "") # 양쪽의 공백 제거
 
             if code is "":
                 print("예측이 제대로 이루어지지 않음.")
             else:
-                print("작업 결과물:", code)
+                print(code)
 
         end_time = time.time()
         print("detect에 걸린 시간:", end_time-start_time)
+
+        target = targets.readline()
+        target = target.replace("\n", "")
+
+        code_number = code[:1] + code[3:]
+        target_number = target[:1] + target[3:]
+
+        # 인식률 계산
+        if code == target:
+            completely_correct += 1
+            number_correct += 1
+            print("completely correct!")
+        elif code_number == target_number:
+            number_correct += 1
+            print("partially correct!")
+
+        total += 1
         print("==================================================")
+
+
+    print("전체 인식률:", float(completely_correct) / total ,  " 숫자 인식률:", float(number_correct) / total)
+
 
     
